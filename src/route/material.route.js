@@ -19,19 +19,19 @@ router.get("/:id", protect, getMaterialById);
 router.post(
   "/",
   protect,
-  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
+  authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
   createMaterial
 );
 router.put(
   "/:id",
   protect,
-  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
+  authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
   updateMaterial
 );
 router.delete(
   "/:id",
   protect,
-  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
+  authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
   deleteMaterial
 );
 

@@ -20,19 +20,19 @@ router.get("/:id", protect, getCourseById);
 router.post(
   "/",
   protect,
-  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN),
+  authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN),
   createCourse
 );
 router.put(
   "/:id",
   protect,
-  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN),
+  authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN),
   updateCourse
 );
 router.delete(
   "/:id",
   protect,
-  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN),
+  authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN),
   deleteCourse
 );
 
@@ -40,7 +40,7 @@ router.delete(
 router.post(
   "/:id/assign",
   protect,
-  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
+  authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
   assignUsers
 );
 

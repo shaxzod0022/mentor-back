@@ -18,7 +18,7 @@ class MaterialService {
   }
 
   async createMaterial(materialData, pdfFile) {
-    const { name, description, videoUrl, courseId } = materialData;
+    const { name, description, videoUrl, courseId, deadline } = materialData;
 
     let pdfPath = "";
     if (pdfFile) {
@@ -44,6 +44,7 @@ class MaterialService {
       videoUrl,
       courseId,
       pdfUrl: pdfPath,
+      deadline,
     });
 
     await activityService.log(materialData.userId, "MATERIAL_CREATED", `"${name}" materialini qo'shdi`);
@@ -66,8 +67,9 @@ class MaterialService {
       throw new Error("Material topilmadi!");
     }
 
-    const { name, description, videoUrl } = materialData;
+    const { name, description, videoUrl, deadline } = materialData;
     let updateData = { name, description, videoUrl };
+    if (deadline) updateData.deadline = deadline;
 
     if (pdfFile) {
       if (pdfFile.mimetype !== 'application/pdf') {

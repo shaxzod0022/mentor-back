@@ -23,8 +23,8 @@ router.post("/login", loginUser);
 
 // Protected routes
 router.get("/profile", protect, getUserProfile);
-router.get("/", protect, authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR), getAllUsers);
-router.get("/stats", protect, authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR, ROLES.STUDENT), getDashboardStats);
+router.get("/", protect, authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR), getAllUsers);
+router.get("/stats", protect, authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR, ROLES.STUDENT), getDashboardStats);
 
 // Creation, Update, Deletion involve hierarchy checks inside controllers
 router.post("/", protect, createUser);

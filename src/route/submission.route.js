@@ -5,6 +5,7 @@ const {
   getStudentSubmissions,
   toggleGradingPermission,
   assignGrade,
+  deleteSubmission
 } = require("../controller/submission.controller");
 const { protect, authorize } = require("../middleware/auth.middleware");
 const { ROLES } = require("../util/roles");
@@ -28,22 +29,29 @@ router.get(
 router.get(
   "/course/:courseId",
   protect,
-  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
+  authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
   getCourseSubmissions
 );
 
 router.patch(
   "/:id/status",
   protect,
-  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
+  authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
   toggleGradingPermission
 );
 
 router.patch(
   "/:id/grade",
   protect,
-  authorize(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER),
+  authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER),
   assignGrade
+);
+
+router.delete(
+  "/:id",
+  protect,
+  authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER),
+  deleteSubmission
 );
 
 module.exports = router;

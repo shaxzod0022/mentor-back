@@ -10,7 +10,7 @@ class NotificationService {
     if (!course) return;
 
     let recipients = [];
-    const admins = await userRepository.find({ role: { $in: [ROLES.SUPER_ADMIN, ROLES.ADMIN] } });
+    const admins = await userRepository.find({ role: { $in: [ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN] } });
 
     if (type === "NEW_MATERIAL") {
       // All course members + admins

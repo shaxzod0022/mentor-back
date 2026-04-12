@@ -34,6 +34,10 @@ class SubmissionRepository {
     return await Submission.findByIdAndUpdate(id, data, { new: true });
   }
 
+  async delete(id) {
+    return await Submission.findByIdAndDelete(id);
+  }
+
   async count(query) {
     return await Submission.countDocuments(query);
   }

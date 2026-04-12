@@ -7,7 +7,7 @@ class NotificationRepository {
   }
 
   async findByRecipient(userId) {
-    return await Notification.find({ recipient: userId })
+    return await Notification.find({ recipient: userId, isRead: false })
       .sort({ createdAt: -1 })
       .populate("sender", "firstName lastName role")
       .limit(50);

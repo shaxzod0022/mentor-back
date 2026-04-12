@@ -1,4 +1,5 @@
 const submissionRepository = require("../repository/submission.repository");
+const materialRepository = require("../repository/material.repository");
 const path = require("path");
 const fs = require("fs");
 const activityService = require("./activity.service");
@@ -9,6 +10,15 @@ class SubmissionService {
   async submitHomework(studentId, materialId, courseId, pdfFile) {
     if (!pdfFile || pdfFile.mimetype !== 'application/pdf') {
       throw new Error("Faqat PDF fayllarni yuklash mumkin!");
+    }
+
+    const material = await materialRepository.findById(materialId);
+    if (!material) {
+        throw new Error("Material topilmadi");
+    }
+
+    if (material.deadline && new Date() > new Date(material.deadline)) {
+        throw new Error("Topshirish muddati o'tib ketgan!");
     }
 
     // Check if already submitted
@@ -100,7 +110,7 @@ class SubmissionService {
     const submission = await submissionRepository.findById(submissionId);
     if (!submission) throw new Error("Vazifa topilmadi");
     
-    const isAdmin = userRole === ROLES.ADMIN || userRole === ROLES.SUPER_ADMIN;
+    const isAdmin = userRole === ROLES.OWNER || userRole === ROLES.SUPER_ADMIN || userRole === ROLES.ADMIN;
 
     // 1. Restriction: Mentor must open permission first
     if (!submission.isGradeable && !isAdmin) {
@@ -131,6 +141,35 @@ class SubmissionService {
     );
 
     return updated;
+  }
+
+  async deleteSubmission(submissionId, userId, userRole) {
+    const isAllowed = userRole === ROLES.OWNER || userRole === ROLES.SUPER_ADMIN || userRole === ROLES.ADMIN || userRole === ROLES.TEACHER;
+    if (!isAllowed) {
+      throw new Error("Sizda bu amalni bajarish uchun ruxsat yo'q!");
+    }
+
+    const submission = await submissionRepository.findById(submissionId);
+    if (!submission) {
+      throw new Error("Vazifa topilmadi");
+    }
+
+    // Delete associated PDF file
+    if (submission.submissionUrl) {
+      const pdfPath = path.join(__dirname, "..", submission.submissionUrl);
+      if (fs.existsSync(pdfPath)) {
+        fs.unlinkSync(pdfPath);
+      }
+    }
+
+    await submissionRepository.delete(submissionId);
+    await activityService.log(
+      userId,
+      "HOMEWORK_DELETED",
+      `Student vazifasini o'chirdi`
+    );
+
+    return { message: "Vazifa muvaffaqiyatli o'chirildi" };
   }
 }
 

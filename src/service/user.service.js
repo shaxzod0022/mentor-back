@@ -84,13 +84,29 @@ class UserService {
       throw new Error("Foydalanuvchi topilmadi");
     }
 
+    const { role: initiatorRole, userId: initiatorId } = modifierRole;
+
+    // Check permissions
+    if (userId.toString() !== initiatorId.toString()) {
+      if (!canCreateRole(initiatorRole, user.role)) {
+        throw new Error("Sizda ushbu foydalanuvchi ma'lumotlarini o'zgartirishga ruxsat yo'q!");
+      }
+    }
+
     const { firstName, lastName, email, newPassword, role } = updateData;
     let updatedFields = { firstName, lastName, email };
 
+    // Prevent non-owners from changing their own profile info (only password allowed)
+    // Actually, SUPER_ADMIN was allowed before, but now let's allow OWNER. We can also allow SUPER_ADMIN if needed, but let's stick to OWNER.
+    if (userId.toString() === initiatorId.toString() && initiatorRole !== ROLES.OWNER && initiatorRole !== ROLES.SUPER_ADMIN) {
+      updatedFields = {};
+    }
+
     // Hierarchy check for role update
     if (role && role !== user.role) {
-      if (!canCreateRole(modifierRole, role)) {
-        throw new Error("Sizda ushbu rolni o'zgartirishga ruxsat yo'q!");
+      // Prevent changing own role, or upgrading someone to a role you can't create
+      if (userId.toString() === initiatorId.toString() || !canCreateRole(initiatorRole, role)) {
+        throw new Error("Sizda rolni bu holatga o'zgartirishga ruxsat yo'q!");
       }
       updatedFields.role = role;
     }
@@ -106,7 +122,7 @@ class UserService {
   }
 
   async deleteUser(targetId, initiatorId, initiatorRole) {
-    if (targetId === initiatorId) {
+    if (targetId.toString() === initiatorId.toString()) {
       throw new Error("O'z-o'zingizni o'chirib yubora olmaysiz!");
     }
 
@@ -130,22 +146,11 @@ class UserService {
     
     let query = {};
 
-    // Restriction: ADMIN cannot see SUPER_ADMIN
-    if (requesterRole === ROLES.ADMIN) {
-      query.role = { $ne: ROLES.SUPER_ADMIN };
-    }
-
-    // Restriction: TEACHER cannot see ADMIN or SUPER_ADMIN
-    if (requesterRole === ROLES.TEACHER) {
-      query.role = { $nin: [ROLES.SUPER_ADMIN, ROLES.ADMIN] };
-    }
+    const allowedRoles = [requesterRole, ...(ROLE_HIERARCHY[requesterRole] || [])];
+    query.role = { $in: allowedRoles };
 
     if (role && role !== 'all') {
-      // If filtering by role, ensure it doesn't bypass the restriction
-      if (requesterRole === ROLES.ADMIN && role === ROLES.SUPER_ADMIN) {
-        throw new Error("Sizda ushbu rolni ko'rish huquqi yo'q!");
-      }
-      if (requesterRole === ROLES.TEACHER && (role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN)) {
+      if (!allowedRoles.includes(role)) {
         throw new Error("Sizda ushbu rolni ko'rish huquqi yo'q!");
       }
       query.role = role;
@@ -200,6 +205,7 @@ class UserService {
     }
 
     const formattedStats = {
+      owner: 0,
       super_admin: 0,
       admin: 0,
       teacher: 0,
@@ -210,13 +216,11 @@ class UserService {
       materials: materialCount
     };
 
+    const allowedRolesToSee = [requesterRole, ...(ROLE_HIERARCHY[requesterRole] || [])];
+
     stats.forEach((item) => {
-      // Restriction: ADMIN cannot see SUPER_ADMIN counts
-      if (requesterRole === ROLES.ADMIN && item._id === ROLES.SUPER_ADMIN) {
-        return;
-      }
-      // Restriction: TEACHER cannot see ADMIN or SUPER_ADMIN counts
-      if (requesterRole === ROLES.TEACHER && (item._id === ROLES.SUPER_ADMIN || item._id === ROLES.ADMIN)) {
+      // Security: Only count roles the requester is allowed to see
+      if (!allowedRolesToSee.includes(item._id)) {
         return;
       }
       formattedStats[item._id] = item.count;

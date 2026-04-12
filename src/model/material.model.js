@@ -23,6 +23,10 @@ const materialSchema = new mongoose.Schema(
       ref: "Course",
       required: true,
     },
+    deadline: {
+      type: Date,
+      required: true,
+    },
   },
   { timestamps: true }
 );

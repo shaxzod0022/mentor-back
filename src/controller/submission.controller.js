@@ -51,10 +51,20 @@ const assignGrade = async (req, res) => {
   }
 };
 
+const deleteSubmission = async (req, res) => {
+  try {
+    const result = await submissionService.deleteSubmission(req.params.id, req.user._id, req.user.role);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(403).json({ message: error.message });
+  }
+};
+
 module.exports = {
   submitHomework,
   getCourseSubmissions,
   getStudentSubmissions,
   toggleGradingPermission,
-  assignGrade
+  assignGrade,
+  deleteSubmission
 };
