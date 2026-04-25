@@ -143,6 +143,30 @@ class SubmissionService {
     return updated;
   }
 
+  async rejectSubmission(submissionId, mentorId) {
+    const submission = await submissionRepository.findById(submissionId);
+    if (!submission) throw new Error("Vazifa topilmadi");
+
+    const updated = await submissionRepository.update(submissionId, {
+      status: "rejected",
+      isGradeable: false,
+      grade: null
+    });
+
+    await activityService.log(mentorId, "HOMEWORK_REJECTED", `Vazifani yaroqsiz deb belgiladi`);
+
+    // Notify student
+    await notificationService.notifyUser(
+      updated.student,
+      mentorId,
+      "SUBMISSION_REJECTED",
+      `Vazifangiz mentor tomonidan yaroqsiz deb topildi. Iltimos, qaytadan yuklang.`,
+      updated.course
+    );
+
+    return updated;
+  }
+
   async deleteSubmission(submissionId, userId, userRole) {
     const isAllowed = userRole === ROLES.OWNER || userRole === ROLES.SUPER_ADMIN || userRole === ROLES.ADMIN || userRole === ROLES.TEACHER;
     if (!isAllowed) {

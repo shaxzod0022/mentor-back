@@ -5,7 +5,8 @@ const {
   getStudentSubmissions,
   toggleGradingPermission,
   assignGrade,
-  deleteSubmission
+  deleteSubmission,
+  rejectSubmission
 } = require("../controller/submission.controller");
 const { protect, authorize } = require("../middleware/auth.middleware");
 const { ROLES } = require("../util/roles");
@@ -45,6 +46,13 @@ router.patch(
   protect,
   authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER),
   assignGrade
+);
+
+router.patch(
+  "/:id/reject",
+  protect,
+  authorize(ROLES.OWNER, ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.MENTOR),
+  rejectSubmission
 );
 
 router.delete(

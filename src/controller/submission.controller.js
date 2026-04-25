@@ -60,11 +60,21 @@ const deleteSubmission = async (req, res) => {
   }
 };
 
+const rejectSubmission = async (req, res) => {
+  try {
+    const submission = await submissionService.rejectSubmission(req.params.id, req.user._id);
+    res.status(200).json({ message: "Vazifa yaroqsiz deb belgilandi", submission });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   submitHomework,
   getCourseSubmissions,
   getStudentSubmissions,
   toggleGradingPermission,
   assignGrade,
-  deleteSubmission
+  deleteSubmission,
+  rejectSubmission
 };

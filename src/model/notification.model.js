@@ -14,7 +14,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["NEW_MATERIAL", "NEW_SUBMISSION", "SUBMISSION_REVIEWED", "SUBMISSION_GRADED"],
+      enum: ["NEW_MATERIAL", "NEW_SUBMISSION", "SUBMISSION_REVIEWED", "SUBMISSION_GRADED", "SUBMISSION_REJECTED"],
       required: true,
     },
     message: {
